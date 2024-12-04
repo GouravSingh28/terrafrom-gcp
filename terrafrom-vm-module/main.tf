@@ -3,7 +3,7 @@ variable "google_credentials" {
   description = "Path to the GCP service account JSON file"
 }
 provider "google" {
-  credentials = file(var.google_credentials) # Replace with your JSON key path
+  credentials = base64decode(var.google_credentials) # Replace with your JSON key path
   project     = "terraform-learning-442205" # Replace with your GCP Project ID
   region      = "us-central1"
 }
