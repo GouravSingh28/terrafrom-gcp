@@ -37,15 +37,7 @@ pipeline {
                             export GOOGLE_CREDENTIALS_BASE64=$(base64 -w 0 $GOOGLE_CREDENTIALS)
                             echo "Checking credentials for Destroy..."
                             ls -l $GOOGLE_CREDENTIALS
-                            terraform destroy -auto-approve \
-                                -var="google_credentials=$GOOGLE_CREDENTIALS" \
-                                -var="project_id=${PROJECT_ID}" \
-                                -var="region=${REGION}" \
-                                -var="vm_name=${VM_NAME}" \
-                                -var="machine_type=${MACHINE_TYPE}" \
-                                -var="disk_image=${DISK_IMAGE}" \
-                                -var="network=${NETWORK}" \
-                                -var="service_account_email=${SERVICE_ACCOUNT_EMAIL}"
+                            terraform destroy -auto-approve
                         '''
                     }
                 }
