@@ -32,14 +32,11 @@ pipeline {
         stage('Destroy') {
             steps {
                 withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {
-                    dir('terrafrom-vm-module') {
-                        sh '''
-                            export GOOGLE_CREDENTIALS_BASE64=$(base64 -w 0 $GOOGLE_CREDENTIALS)
-                            echo "Checking credentials for Destroy..."
-                            ls -l $GOOGLE_CREDENTIALS
-                            terraform destroy -auto-approve \
-                            -var="google_credentials=$GOOGLE_CREDENTIALS"
-                        '''
+                dir('terrafrom-vm-module') {
+                    sh '''
+                    export GOOGLE_CREDENTIALS=$(cat $GOOGLE_CREDENTIALS_FILE | base64)
+                    terraform destroy -auto-approve -var="google_credentials=$GOOGLE_CREDENTIALS"
+                       '''
                     }
                 }
             }
