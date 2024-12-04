@@ -55,7 +55,7 @@ variable "tags" {
 variable "service_account_email" {
   description = "Service account email"
   type        = string
-  default     = "gouravsingh335@gmail.com"
+  default     = "terraform@terraform-learning-442205.iam.gserviceaccount.com"
 }
 
 variable "service_account_scopes" {
