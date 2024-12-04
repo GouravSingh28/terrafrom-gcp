@@ -50,7 +50,7 @@ pipeline {
                         export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
                         # Run Terraform commands
                         terraform plan -out=tfplan \
-			    -var="google_credentials=$GOOGLE_CREDENTIALS"
+			    -var="google_credentials=$GOOGLE_CREDENTIALS" \
                             -var="project_id=${PROJECT_ID}" \
                             -var="region=${REGION}" \
                             -var="vm_name=${VM_NAME}" \
