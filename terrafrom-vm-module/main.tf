@@ -1,7 +1,7 @@
 # Configure the Google Cloud provider
 provider "google" {
-  credentials = env.GOOGLE_CREDENTIALS # Replace with your JSON key path
-  project     = "terraform-learning-442205"                            # Replace with your GCP Project ID
+  credentials = file(var.google_credentials != "" ? var.google_credentials : getenv("GOOGLE_CREDENTIALS")) # Replace with your JSON key path
+  project     = "terraform-learning-442205" # Replace with your GCP Project ID
   region      = "us-central1"
 }
 
