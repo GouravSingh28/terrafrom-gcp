@@ -34,10 +34,21 @@ pipeline {
                 withCredentials([file(credentialsId: 'gcp-json', variable: 'GOOGLE_APPLICATION_CREDENTIALS_FILE')]) {
                     dir('terrafrom-vm-module') { sh '''
                         # Export credentials for Terraform
-                        export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS_FILE
-                        
+                        export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS_FILE   
                         # Run Terraform commands
                         terraform init
+                    '''
+                }
+            }
+        }
+    }
+       stage('Plan') {
+            steps {
+                withCredentials([file(credentialsId: 'gcp-json', variable: 'GOOGLE_APPLICATION_CREDENTIALS_FILE')]) {
+                    dir('terrafrom-vm-module') { sh '''
+                        # Export credentials for Terraform
+                        export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS_FILE
+                        # Run Terraform commands
                         terraform plan -out=tfplan \
                             -var="project_id=${PROJECT_ID}" \
                             -var="region=${REGION}" \
@@ -50,8 +61,8 @@ pipeline {
                 }
             }
         }
-    }
-        stage('Apply') {
+    }	
+       stage('Apply') {
             steps {
             withCredentials([file(credentialsId: 'gcp-json', variable: 'GOOGLE_APPLICATION_CREDENTIALS_FILE')]) {    
             dir('terrafrom-vm-module') {    
