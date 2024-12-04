@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'PROJECT_ID', defaultValue: 'terraform-learning-442205', description: 'GCP Project ID')
+        string(name: 'REGION', defaultValue: 'us-central1', description: 'GCP Region')
+        string(name: 'VM_NAME', defaultValue: 'test-vm-1', description: 'Name of the VM')
+        string(name: 'MACHINE_TYPE', defaultValue: 'e2-micro', description: 'Machine type (e.g., e2-medium)')
+        string(name: 'DISK_IMAGE', defaultValue: 'debian-cloud/debian-11', description: 'Source image for the boot disk')
+        string(name: 'NETWORK', defaultValue: 'default', description: 'VPC network name')
+        string(name: 'SERVICE_ACCOUNT_EMAIL', defaultValue: 'terraform@terraform-learning-442205.iam.gserviceaccount.com', description: 'Service account email')
+    }
+    environment {
+        GOOGLE_CREDENTIALS = credentials('gcp-new-json') // Add this in Jenkins credentials
+        PROJECT_ID = 'terraform-learning-442205'
+    }
+
+    stages {
+        stage('GIT CHECKOUT') {
+            steps {
+                script {
+                    git credentialsId: 'terrafor-gcp-token', branch: 'main', url: "https://github.com/GouravSingh28/terrafrom-gcp.git"
+                }
+            }
+        }
+
+        stage('Debug Workspace') {
+            steps {
+                withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {
+                    dir('terrafrom-vm-module') {
+                        sh '''
+                            # Export credentials for Terraform
+                            export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE   
+                            # Initialize Terraform to ensure configuration is ready for destroy
+                            terraform init
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Destroy') {
+            steps {
+                withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {
+                    dir('terrafrom-vm-module') {
+                        sh '''
+                            export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
+                            echo "Checking credentials for Destroy..."
+                            ls -l $GOOGLE_CREDENTIALS
+                            terraform destroy -auto-approve \
+                                -var="google_credentials=$GOOGLE_CREDENTIALS" \
+                                -var="project_id=${PROJECT_ID}" \
+                                -var="region=${REGION}" \
+                                -var="vm_name=${VM_NAME}" \
+                                -var="machine_type=${MACHINE_TYPE}" \
+                                -var="disk_image=${DISK_IMAGE}" \
+                                -var="network=${NETWORK}" \
+                                -var="service_account_email=${SERVICE_ACCOUNT_EMAIL}"
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
