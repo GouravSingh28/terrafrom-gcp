@@ -3,7 +3,6 @@ pipeline {
     parameters {
         string(name: 'PROJECT_ID', defaultValue: 'terraform-learning-442205', description: 'GCP Project ID')
         string(name: 'REGION', defaultValue: 'us-central1', description: 'GCP Region')
-        //string(name: 'ZONE', defaultValue: 'us-central1-a', description: 'GCP Zone')
         string(name: 'VM_NAME', defaultValue: 'test-vm-1', description: 'Name of the VM')
         string(name: 'MACHINE_TYPE', defaultValue: 'e2-micro', description: 'Machine type (e.g., e2-medium)')
         string(name: 'DISK_IMAGE', defaultValue: 'debian-cloud/debian-11', description: 'Source image for the boot disk')
@@ -17,65 +16,67 @@ pipeline {
     }
 
     stages {
-           
-		 stage('GIT CHECKOUT')
-        {		  
-		   steps{
-		   script {
-		   git credentialsId: 'terrafor-gcp-token', branch: 'main', url: "https://github.com/GouravSingh28/terrafrom-gcp.git" 
-		   }
-		   
-		   }
-		}
-
-
-       stage('Debug Workspace') {
+        stage('GIT CHECKOUT') {
             steps {
-                withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {
-                    dir('terrafrom-vm-module') { sh '''
-                        # Export credentials for Terraform
-                        export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE   
-                        # Run Terraform commands
-                        terraform init
-                    '''
+                script {
+                    git credentialsId: 'terrafor-gcp-token', branch: 'main', url: "https://github.com/GouravSingh28/terrafrom-gcp.git" 
                 }
             }
         }
-    }
-       stage('Plan') {
+
+        stage('Debug Workspace') {
             steps {
                 withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {
-                    dir('terrafrom-vm-module') { sh '''
-                        # Export credentials for Terraform
-                        export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
-                        # Run Terraform commands
-                        terraform plan -out=tfplan \
-			    -var="google_credentials=$GOOGLE_CREDENTIALS" \
-                            -var="project_id=${PROJECT_ID}" \
-                            -var="region=${REGION}" \
-                            -var="vm_name=${VM_NAME}" \
-                            -var="machine_type=${MACHINE_TYPE}" \
-                            -var="disk_image=${DISK_IMAGE}" \
-                            -var="network=${NETWORK}" \
-                            -var="service_account_email=${SERVICE_ACCOUNT_EMAIL}"
-                    '''
+                    dir('terrafrom-vm-module') {
+                        sh '''
+                            # Export credentials for Terraform
+                            export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE   
+                            # Run Terraform commands
+                            terraform init
+                        '''
+                    }
                 }
             }
         }
-    }	
-       stage('Apply') {
+
+        stage('Plan') {
             steps {
-            withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {    
-            dir('terrafrom-vm-module') {    
-                sh '''
-                    export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
-                    echo "Checking credentials..."
-                    ls -l $GOOGLE_CREDENTIALS 
-                    terraform apply "tfplan"
-                '''
+                withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {
+                    dir('terrafrom-vm-module') {
+                        sh '''
+                            # Export credentials for Terraform
+                            export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
+                            # Base64 encode the credentials file and pass it to Terraform
+                            export GOOGLE_CREDENTIALS_BASE64=$(base64 -w 0 $GOOGLE_CREDENTIALS)
+                            # Run Terraform plan with base64-encoded credentials
+                            terraform plan -out=tfplan \
+                                -var="google_credentials=$GOOGLE_CREDENTIALS_BASE64" \
+                                -var="project_id=${PROJECT_ID}" \
+                                -var="region=${REGION}" \
+                                -var="vm_name=${VM_NAME}" \
+                                -var="machine_type=${MACHINE_TYPE}" \
+                                -var="disk_image=${DISK_IMAGE}" \
+                                -var="network=${NETWORK}" \
+                                -var="service_account_email=${SERVICE_ACCOUNT_EMAIL}"
+                        '''
+                    }
+                }
             }
-        } 
+        }
+
+        stage('Apply') {
+            steps {
+                withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {    
+                    dir('terrafrom-vm-module') {    
+                        sh '''
+                            export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
+                            echo "Checking credentials..."
+                            ls -l $GOOGLE_CREDENTIALS 
+                            terraform apply "tfplan"
+                        '''
+                    }
+                } 
+            }
+        }
     }
-}
-}
 }
