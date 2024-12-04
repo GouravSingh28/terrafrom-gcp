@@ -11,7 +11,7 @@ pipeline {
         string(name: 'SERVICE_ACCOUNT_EMAIL', defaultValue: 'terraform@terraform-learning-442205.iam.gserviceaccount.com', description: 'Service account email')
     }
     environment {
-        GOOGLE_CREDENTIALS = credentials('gcp-json') // Add this in Jenkins credentials
+        GOOGLE_CREDENTIALS = credentials('gcp-new-json') // Add this in Jenkins credentials
         PROJECT_ID = 'terraform-learning-442205'
         TERRAFORM_VERSION = '1.9.8' // Replace with the version you need
     }
@@ -31,7 +31,7 @@ pipeline {
 
        stage('Debug Workspace') {
             steps {
-                withCredentials([file(credentialsId: 'gcp-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {
+                withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {
                     dir('terrafrom-vm-module') { sh '''
                         # Export credentials for Terraform
                         export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE   
@@ -44,7 +44,7 @@ pipeline {
     }
        stage('Plan') {
             steps {
-                withCredentials([file(credentialsId: 'gcp-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {
+                withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {
                     dir('terrafrom-vm-module') { sh '''
                         # Export credentials for Terraform
                         export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
@@ -64,7 +64,7 @@ pipeline {
     }	
        stage('Apply') {
             steps {
-            withCredentials([file(credentialsId: 'gcp-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {    
+            withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {    
             dir('terrafrom-vm-module') {    
                 sh '''
                     export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
