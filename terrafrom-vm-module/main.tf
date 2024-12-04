@@ -5,6 +5,9 @@ provider "google" {
   region      = "us-central1"
 }
 
+data "google_compute_zones" "available" {
+  region = var.region
+}
 
 resource "google_compute_instance" "vm_instance" {
   name         = var.vm_name
