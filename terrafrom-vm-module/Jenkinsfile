@@ -71,7 +71,8 @@ pipeline {
                     export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
                     echo "Checking credentials..."
                     ls -l $GOOGLE_CREDENTIALS
-		    terraform apply -auto-approve // terraform apply tfplan
+		    // terraform apply -auto-approve 
+                    terraform apply tfplan
                 '''
             }
         } 
