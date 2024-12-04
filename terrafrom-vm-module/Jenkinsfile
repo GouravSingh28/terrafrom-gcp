@@ -50,6 +50,7 @@ pipeline {
                         export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
                         # Run Terraform commands
                         terraform plan -out=tfplan \
+			    -var="google_credentials=$GOOGLE_CREDENTIALS"
                             -var="project_id=${PROJECT_ID}" \
                             -var="region=${REGION}" \
                             -var="vm_name=${VM_NAME}" \
@@ -69,9 +70,8 @@ pipeline {
                 sh '''
                     export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
                     echo "Checking credentials..."
-                    ls -l $GOOGLE_APPLICATION_CREDENTIALS
-                    cat $GOOGLE_APPLICATION_CREDENTIALS
-                    terraform apply tfplan
+                    ls -l $GOOGLE_CREDENTIALS
+		    terraform apply -auto-approve // terraform apply tfplan
                 '''
             }
         } 
