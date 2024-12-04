@@ -9,7 +9,7 @@ provider "google" {
 resource "google_compute_instance" "vm_instance" {
   name         = var.vm_name
   machine_type = var.machine_type
-  zone         = var.zone
+  zone         = data.google_compute_zones.available.names[0]
 
   boot_disk {
     initialize_params {
