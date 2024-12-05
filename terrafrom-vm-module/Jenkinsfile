@@ -72,6 +72,7 @@ pipeline {
                             export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
                             echo "Checking credentials..."
                             ls -l $GOOGLE_CREDENTIALS 
+                            terraform import google_os_login_ssh_public_key.default users/gouravsingh335@gmail.com/sshPublicKeys/SHA256:YCi5fybiXON8TMrf7gpAlBNV/p8UCCDZfgG9O2/lwc8
                             terraform apply "tfplan"
                         '''
                     }
