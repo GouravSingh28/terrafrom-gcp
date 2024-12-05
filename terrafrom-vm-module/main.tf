@@ -37,7 +37,7 @@ resource "google_compute_instance" "vm_instance" {
 }
 
 resource "google_os_login_ssh_public_key" "default" {
-  user = "gouravsingh335@gmial.com" # Replace with your GCP email
+  user = "gouravsingh335@gmail.com" # Replace with your GCP email
   key  = file("./access-key.pub")
 }
 
