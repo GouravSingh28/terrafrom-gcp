@@ -44,6 +44,6 @@ resource "google_compute_instance" "vm_instance" {
 
 # Define the SSH public key resource for OS Login
 resource "google_os_login_ssh_public_key" "default" {
-  user = "gouravsingh335@gmail.com"  # Replace with your GCP email
+  user = "terraform@terraform-learning-442205.iam.gserviceaccount.com"  # Replace with your GCP email
   key  = file("./access-key.pub")    # Path to your public key file
 }
