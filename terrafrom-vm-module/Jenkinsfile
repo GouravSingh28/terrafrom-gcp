@@ -19,7 +19,7 @@ pipeline {
         stage('GIT CHECKOUT') {
             steps {
                 script {
-                    git credentialsId: 'terrafor-gcp-token', branch: 'main', url: "https://github.com/GouravSingh28/terrafrom-gcp.git" 
+                    git credentialsId: 'terrafor-gcp-token', branch: 'added-ssh-config', url: "https://github.com/GouravSingh28/terrafrom-gcp.git" 
                 }
             }
         }
