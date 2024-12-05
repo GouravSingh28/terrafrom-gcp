@@ -51,7 +51,7 @@ pipeline {
                             # Base64 encode the credentials file and pass it to Terraform
                             export GOOGLE_CREDENTIALS_BASE64=$(base64 -w 0 $GOOGLE_CREDENTIALS)
                             # Run Terraform plan with base64-encoded credentials
-                            terraform import google_os_login_ssh_public_key.default users/gouravsingh335@gmail.com/sshPublicKeys/SHA256:YCi5fybiXON8TMrf7gpAlBNV/p8UCCDZfgG9O2/lwc8
+                            terraform import google_os_login_ssh_public_key.default users/gouravsingh335@gmail.com/sshPublicKeys/SHA256:YCi5fybiXON8TMrf7gpAlBNV/p8UCCDZfgG9O2/lwc8 -var="google_credentials=$GOOGLE_CREDENTIALS_BASE64"
                             terraform plan -out=tfplan \
                                 -var="google_credentials=$GOOGLE_CREDENTIALS_BASE64" \
                                 -var="project_id=${PROJECT_ID}" \
