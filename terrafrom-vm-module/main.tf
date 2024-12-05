@@ -35,15 +35,11 @@ resource "google_compute_instance" "vm_instance" {
   metadata = {
     enable-oslogin = "TRUE"
   }
-
+ metadata = {
+    ssh-keys = "access-key:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCpJwGzB7cY46OjY54N+G6V0dLtU6EEkm1/AIbZF1a/z7yWSzxnBCEL6H9Iy0MC19AzeqtThGbMzTQ0a9hmPLgA1UUP3AsZKi0YXPc1PCNX3QlMDn6QcN/WQzgoWjEZh+AA316y1E1l1ceJCtYiDdby/ZMX16b9iCiE9P/EymiPjxquBRgxNQEeRWWiGt+bOPd3ceOdcUhpBOx+C8r2f2i2twb34SOSbMS/NA2QTRIuNgIndqYGL87xnAR01ShG+CrXbkelAhFtOS4C9lqqinwL5MTIUO8N8ITtWohywMhzzREdKfAftxh3kTviQq9N0VvfChKJSQF6kOl4F7YDQXR5CPEikjnCAFdrTGTNSZvP8NAL0yHFGfgXDJIXuONLC9UTUnEuEdTvl3kyrVaMFYaGDE+Xezeig07quisKQKvyktg58f/9+CzCTt7SEGx5dqcN3YwL+wiFZUdSdh0IGVIwJ6shzjEZiDa775Gj+SI6zyzdq48NHGNLHmfmC0ej3FE= gouravsingh335"
+  }
   service_account {
     email  = var.service_account_email
     scopes = var.service_account_scopes
   }
-}
-
-# Define the SSH public key resource for OS Login
-resource "google_os_login_ssh_public_key" "default" {
-  user = "terraform@terraform-learning-442205.iam.gserviceaccount.com"  # Replace with your GCP email
-  key  = file("./access-key.pub")    # Path to your public key file
 }
