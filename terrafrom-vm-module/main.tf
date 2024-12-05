@@ -5,7 +5,7 @@ variable "google_credentials" {
 
 provider "google" {
   credentials = base64decode(var.google_credentials) # Replace with your JSON key path
-  project     = "terraform-learning-442205" # Replace with your GCP Project ID
+  project     = "terraform-learning-442205"  # Replace with your GCP Project ID
   region      = "us-central1"
 }
 
@@ -13,6 +13,7 @@ data "google_compute_zones" "available" {
   region = var.region
 }
 
+# Define the VM resource
 resource "google_compute_instance" "vm_instance" {
   name         = var.vm_name
   machine_type = var.machine_type
@@ -41,7 +42,8 @@ resource "google_compute_instance" "vm_instance" {
   }
 }
 
+# Define the SSH public key resource for OS Login
 resource "google_os_login_ssh_public_key" "default" {
-  user = "gouravsingh335@gmail.com" # Replace with your GCP email
-  key  = file("./access-key.pub")   # Path to your public key file
+  user = "gouravsingh335@gmail.com"  # Replace with your GCP email
+  key  = file("./access-key.pub")    # Path to your public key file
 }
