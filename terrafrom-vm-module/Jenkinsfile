@@ -81,5 +81,11 @@ pipeline {
                 } 
             }
         }
+      stage('Echo') {
+            steps {   
+               1 echo "Username : gouravsingh335"
+                echo " Key file is saved in GCP console"
+            }
+      }
     }
 }
