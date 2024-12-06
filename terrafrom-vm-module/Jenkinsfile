@@ -19,33 +19,29 @@ pipeline {
             }
         }
 
-        stage('Run Installation Script') {
-        steps {
-            withCredentials([
-            string(credentialsId: 'github-token', variable: 'GIT_TOKEN'),
-            sshUserPrivateKey(credentialsId: 'ssh-key', keyFileVariable: 'SSH_KEY')
-            ]) {
-            script {
-                // Define remote SSH details
-                def remote = [
-                    host: "${SERVER_IP}",
-                    user: "${SSH_USER}",
-                    identityFile: "${SSH_KEY}"
-                ]
+        stages {
+          stage('Run Installation Script') {
+            steps {
+                withCredentials([
+                    file(credentialsId: 'ssh-key-file', variable: 'SSH_KEY_FILE')
+                ]) {
+                    script {
+                        // Start ssh-agent and add the key
+                        sh """
+                        eval \$(ssh-agent -s)
+                        ssh-add ${SSH_KEY_FILE}
+                        """
 
-                // Copy the script to the remote server
-                sh """
-                scp -i ${remote.identityFile} -o StrictHostKeyChecking=no ${INSTALL_SCRIPT} ${remote.user}@${remote.host}:/tmp/install-script.sh
-                """
-
-                // Execute the script on the remote server and pass the GIT_TOKEN
-                sh """
-                ssh -i ${remote.identityFile} -o StrictHostKeyChecking=no ${remote.user}@${remote.host} "GIT_TOKEN=${GIT_TOKEN} bash /tmp/install-script.sh"
-                """
+                        // Transfer and run the script
+                        sh """
+                        scp -o StrictHostKeyChecking=no ${INSTALL_SCRIPT} ${SSH_USER}@${params.SERVER_IP}:/tmp/install-script.sh
+                        ssh -o StrictHostKeyChecking=no ${SSH_USER}@${params.SERVER_IP} "GIT_TOKEN=${params.GIT_TOKEN} bash /tmp/install-script.sh"
+                        """
+                    }
+                }
             }
         }
     }
-}
     }
     post {
         success {
