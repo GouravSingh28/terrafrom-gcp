@@ -21,7 +21,7 @@ pipeline {
           stage('Run Installation Script') {
             steps {
                 withCredentials([
-                    file(credentialsId: 'ssh-key-file', variable: 'SSH_KEY_FILE')
+                    file(credentialsId: 'ssh-key', variable: 'SSH_KEY_FILE')
                 ]) {
                     script {
                         // Start ssh-agent and add the key
