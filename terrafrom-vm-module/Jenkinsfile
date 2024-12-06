@@ -23,7 +23,7 @@ pipeline {
         steps {
             withCredentials([
             string(credentialsId: 'github-token', variable: 'GIT_TOKEN'),
-            sshUserPrivateKey(credentialsId: 'ssh-credentials-id', keyFileVariable: 'SSH_KEY')
+            sshUserPrivateKey(credentialsId: 'ssh-key', keyFileVariable: 'SSH_KEY')
             ]) {
             script {
                 // Define remote SSH details
