@@ -1,91 +1,47 @@
 pipeline {
     agent any
     parameters {
-        string(name: 'PROJECT_ID', defaultValue: 'terraform-learning-442205', description: 'GCP Project ID')
-        string(name: 'REGION', defaultValue: 'us-central1', description: 'GCP Region')
-        string(name: 'VM_NAME', defaultValue: 'test-vm-1', description: 'Name of the VM')
-        string(name: 'MACHINE_TYPE', defaultValue: 'e2-micro', description: 'Machine type (e.g., e2-medium)')
-        string(name: 'DISK_IMAGE', defaultValue: 'debian-cloud/debian-11', description: 'Source image for the boot disk')
-        string(name: 'NETWORK', defaultValue: 'default', description: 'VPC network name')
-        string(name: 'SERVICE_ACCOUNT_EMAIL', defaultValue: 'terraform@terraform-learning-442205.iam.gserviceaccount.com', description: 'Service account email')
+        string(name: 'SERVER_IP', defaultValue: '', description: 'Enter the IP address of the target server')
+        string(name: 'Username', defaultValue: 'gouravsingh335', description: 'Enter username for  login')
     }
     environment {
-        GOOGLE_CREDENTIALS = credentials('gcp-new-json') // Add this in Jenkins credentials
-        PROJECT_ID = 'terraform-learning-442205'
-        TERRAFORM_VERSION = '1.9.8' // Replace with the version you need
+        SSH_CREDENTIALS_ID = 'ssh-key' // Replace with your Jenkins SSH credentials ID
+        INSTALL_SCRIPT = './install-script.sh'  // Update with the path to your installation script
     }
-
     stages {
-        stage('GIT CHECKOUT') {
+        stage('Validate Input') {
             steps {
                 script {
-                    git credentialsId: 'terrafor-gcp-token', branch: 'added-ssh-config', url: "https://github.com/GouravSingh28/terrafrom-gcp.git" 
-                }
-            }
-        }
-
-        stage('Debug Workspace') {
-            steps {
-                withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {
-                    dir('terrafrom-vm-module') {
-                        sh '''
-                            # Export credentials for Terraform
-                            export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE   
-                            # Run Terraform commands
-                            # Base64 encode the credentials file and pass it to Terraform
-                            export GOOGLE_CREDENTIALS_BASE64=$(base64 -w 0 $GOOGLE_CREDENTIALS)
-                            terraform init
-                        '''
+                    if (params.SERVER_IP == '') {
+                        error("SERVER_IP parameter is required.")
                     }
                 }
             }
         }
 
-        stage('Plan') {
+        stage('Run Installation Script') {
             steps {
-                withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {
-                    dir('terrafrom-vm-module') {
-                        sh '''
-                            # Export credentials for Terraform
-                            export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
-                            # Base64 encode the credentials file and pass it to Terraform
-                            export GOOGLE_CREDENTIALS_BASE64=$(base64 -w 0 $GOOGLE_CREDENTIALS)
-                            # Run Terraform plan with base64-encoded credentials
-                            # terraform import google_os_login_ssh_public_key.default users/gouravsingh335@gmail.com/sshPublicKeys/SHA256:YCi5fybiXON8TMrf7gpAlBNV/p8UCCDZfgG9O2/lwc8 -var="google_credentials=$GOOGLE_CREDENTIALS_BASE64"
-                            terraform plan -out=tfplan \
-                                -var="google_credentials=$GOOGLE_CREDENTIALS_BASE64" \
-                                -var="project_id=${PROJECT_ID}" \
-                                -var="region=${REGION}" \
-                                -var="vm_name=${VM_NAME}" \
-                                -var="machine_type=${MACHINE_TYPE}" \
-                                -var="disk_image=${DISK_IMAGE}" \
-                                -var="network=${NETWORK}" \
-                                -var="service_account_email=${SERVICE_ACCOUNT_EMAIL}"
-                        '''
-                    }
-                }
+                sshCommand remote: [
+                    name: 'Target Server',
+                    host: "${SERVER_IP}",
+                    user: "${Username}",, // Update with the SSH username
+                    credentialsId: "${SSH_CREDENTIALS_ID}"
+                ], command: '''
+                    # Transfer the installation script
+                    scp ${INSTALL_SCRIPT} ${USER}@${SERVER_IP}:/tmp/install-script.sh
+                    
+                    # Run the script on the remote server
+                    ssh ${USER}@${SERVER_IP} 'bash /tmp/install-script.sh'
+                '''
             }
         }
-
-        stage('Apply') {
-            steps {
-                withCredentials([file(credentialsId: 'gcp-new-json', variable: 'GOOGLE_CREDENTIALS_FILE')]) {    
-                    dir('terrafrom-vm-module') {    
-                        sh '''
-                            export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS_FILE
-                            echo "Checking credentials..."
-                            ls -l $GOOGLE_CREDENTIALS 
-                            terraform apply "tfplan"
-                        '''
-                    }
-                } 
-            }
+    }
+    post {
+        success {
+            echo "Installation script executed successfully on ${SERVER_IP}."
         }
-      stage('Echo') {
-            steps {   
-                echo "Username : gouravsingh335"
-                echo " Key file is saved in GCP console"
-            }
-      }
+        failure {
+            echo "Failed to run the installation script on ${SERVER_IP}."
+        }
     }
 }
