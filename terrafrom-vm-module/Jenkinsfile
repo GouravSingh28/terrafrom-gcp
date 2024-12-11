@@ -37,7 +37,7 @@ sudo systemctl start docker
 sudo systemctl enable docker
 
 # Clone the repository
-REPO_URL="https://${params.Username}:${GITHUB_TOKEN}@github.com/your-repo.git"  # Replace with your repository
+REPO_URL="https://${params.Username}:${GITHUB_TOKEN}@github.com/Meta-project-11/tga-admin-panel-app.git"  # Replace with your repository
 git clone \$REPO_URL /opt/your-repo
 
 # Install Java
