@@ -18,14 +18,6 @@ pipeline {
                 }
             }
         }
-        stage('Verify Script Availability') {
-            steps {
-                script {
-                    // Verify the script exists
-                    sh "ls -l ${env.INSTALL_SCRIPT}"
-                }
-            }
-        }
         stage('Create Installation Script') {
             steps {
                 script {
