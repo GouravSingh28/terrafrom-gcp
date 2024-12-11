@@ -2,10 +2,10 @@ pipeline {
     agent any
     parameters {
         string(name: 'SERVER_IP', defaultValue: '', description: 'Enter the IP address of the target server')
-        string(name: 'Username', defaultValue: 'gouravsingh335', description: 'Enter username for  login')
+        string(name: 'Username', defaultValue: 'gouravsingh335', description: 'Enter the username for login')
     }
     environment {
-        SSH_CREDENTIALS_ID = 'ssh-user-key' // Replace with your Jenkins SSH credentials ID
+        SSH_CREDENTIALS_ID = 'ssh-user-key'  // Replace with your Jenkins SSH credentials ID
         INSTALL_SCRIPT = './install-script.sh'  // Update with the path to your installation script
     }
     stages {
@@ -18,9 +18,9 @@ pipeline {
                 }
             }
         }
-          stage('Run Installation Script') {
+        stage('Run Installation Script') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'ssh-user-key', keyFileVariable: 'SSH_CREDENTIALS_ID')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: env.SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY_FILE', usernameVariable: 'SSH_USER')]) {
                     script {
                         // Start ssh-agent and add the key
                         sh """
@@ -28,10 +28,14 @@ pipeline {
                         ssh-add ${SSH_KEY_FILE}
                         """
 
-                        // Transfer and run the script
+                        // Transfer the script to the target server
                         sh """
-                        scp -o StrictHostKeyChecking=no ${INSTALL_SCRIPT} ${SSH_USER}@${params.SERVER_IP}:/tmp/install-script.sh
-                        ssh -o StrictHostKeyChecking=no ${SSH_USER}@${params.SERVER_IP} "GIT_TOKEN=${params.GIT_TOKEN} bash /tmp/install-script.sh"
+                        scp -o StrictHostKeyChecking=no ${env.INSTALL_SCRIPT} ${SSH_USER}@${params.SERVER_IP}:/tmp/install-script.sh
+                        """
+
+                        // Run the script on the target server
+                        sh """
+                        ssh -o StrictHostKeyChecking=no ${SSH_USER}@${params.SERVER_IP} "bash /tmp/install-script.sh"
                         """
                     }
                 }
@@ -40,10 +44,10 @@ pipeline {
     }
     post {
         success {
-            echo "Installation script executed successfully on ${SERVER_IP}."
+            echo "Installation script executed successfully on ${params.SERVER_IP}."
         }
         failure {
-            echo "Failed to run the installation script on ${SERVER_IP}."
+            echo "Failed to run the installation script on ${params.SERVER_IP}."
         }
     }
 }
