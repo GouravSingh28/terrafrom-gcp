@@ -38,7 +38,8 @@ sudo systemctl enable docker
 
 # Clone the repository
 REPO_URL="https://${params.Username}:${GITHUB_TOKEN}@github.com/Meta-project-11/tga-admin-panel-app.git"  # Replace with your repository
-git clone \$REPO_URL /opt
+cd /opt
+git clone \$REPO_URL .
 
 # Install Java
 sudo apt install -y openjdk-17-jdk
