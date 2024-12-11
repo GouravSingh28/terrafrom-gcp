@@ -3,10 +3,12 @@ pipeline {
     parameters {
         string(name: 'SERVER_IP', defaultValue: '', description: 'Enter the IP address of the target server')
         string(name: 'Username', defaultValue: 'gouravsingh335', description: 'Enter the username for login')
+        string(name: 'Token Value', defaultValue: '', description: 'token')
     }
     environment {
         SSH_CREDENTIALS_ID = 'ssh-user-key'  // Replace with your Jenkins SSH credentials ID
         INSTALL_SCRIPT = "${env.WORKSPACE}/install-script.sh"  // Path to the installation script in the workspace
+        GITHUB_TOKEN_CREDENTIALS_ID = 'github-token'
     }
     stages {
         stage('Validate Input') {
@@ -20,6 +22,7 @@ pipeline {
         }
         stage('Create Installation Script') {
             steps {
+                withCredentials([string(credentialsId: env.github-token, variable: 'GITHUB_TOKEN')]) {
                 script {
                     // Create the installation script
                     writeFile(file: "${env.INSTALL_SCRIPT}", text: '''#!/bin/bash
@@ -34,8 +37,8 @@ sudo systemctl start docker
 sudo systemctl enable docker
 
 # Clone the repository
-REPO_URL="https://github.com/your-repo.git"  # Replace with your repository URL
-git clone $REPO_URL /opt/your-repo
+REPO_URL="https://${params.Username}:${GITHUB_TOKEN}@github.com/your-repo.git"  # Replace with your repository
+git clone \$REPO_URL /opt/your-repo
 
 # Install Java
 sudo apt install -y openjdk-17-jdk
@@ -52,15 +55,13 @@ sudo mv /opt/keycloak-${KEYCLOAK_VERSION} /opt/keycloak
 sudo chown -R $(whoami):$(whoami) /opt/keycloak
 
 # Start Keycloak services
-cd /opt/keycloak/bin
-./kc.sh start-dev
-
 # Print completion message
 echo "Setup completed. Keycloak is running."
                     ''')
                 }
             }
         }
+    }
         stage('Run Installation Script') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: env.SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY_FILE', usernameVariable: 'SSH_USER')]) {
