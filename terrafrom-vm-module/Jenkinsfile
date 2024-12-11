@@ -6,7 +6,7 @@ pipeline {
     }
     environment {
         SSH_CREDENTIALS_ID = 'ssh-user-key'  // Replace with your Jenkins SSH credentials ID
-        INSTALL_SCRIPT = './install-script.sh'  // Update with the path to your installation script
+        INSTALL_SCRIPT = "${env.WORKSPACE}/install-script.sh"  // Path to the installation script in the workspace
     }
     stages {
         stage('Validate Input') {
@@ -15,6 +15,57 @@ pipeline {
                     if (params.SERVER_IP == '') {
                         error("SERVER_IP parameter is required.")
                     }
+                }
+            }
+        }
+        stage('Verify Script Availability') {
+            steps {
+                script {
+                    // Verify the script exists
+                    sh "ls -l ${env.INSTALL_SCRIPT}"
+                }
+            }
+        }
+        stage('Create Installation Script') {
+            steps {
+                script {
+                    // Create the installation script
+                    writeFile(file: "${env.INSTALL_SCRIPT}", text: '''#!/bin/bash
+
+# Update and install prerequisites
+sudo apt update -y && sudo apt upgrade -y
+sudo apt install -y curl wget git unzip
+
+# Install Docker
+sudo apt install -y docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Clone the repository
+REPO_URL="https://github.com/your-repo.git"  # Replace with your repository URL
+git clone $REPO_URL /opt/your-repo
+
+# Install Java
+sudo apt install -y openjdk-17-jdk
+JAVA_VERSION=$(java -version 2>&1 | head -n 1)
+echo "Java installed: $JAVA_VERSION"
+
+# Download and extract Keycloak
+KEYCLOAK_VERSION="21.1.1"  # Replace with your desired version
+wget https://github.com/keycloak/keycloak/releases/download/${KEYCLOAK_VERSION}/keycloak-${KEYCLOAK_VERSION}.tar.gz -P /tmp
+sudo tar -xzf /tmp/keycloak-${KEYCLOAK_VERSION}.tar.gz -C /opt/
+sudo mv /opt/keycloak-${KEYCLOAK_VERSION} /opt/keycloak
+
+# Set permissions
+sudo chown -R $(whoami):$(whoami) /opt/keycloak
+
+# Start Keycloak services
+cd /opt/keycloak/bin
+./kc.sh start-dev
+
+# Print completion message
+echo "Setup completed. Keycloak is running."
+                    ''')
                 }
             }
         }
