@@ -22,7 +22,7 @@ pipeline {
         }
         stage('Create Installation Script') {
             steps {
-                withCredentials([string(credentialsId: env.github-token, variable: 'GITHUB_TOKEN')]) {
+                withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                 script {
                     // Create the installation script
                     writeFile(file: "${env.INSTALL_SCRIPT}", text: '''#!/bin/bash
