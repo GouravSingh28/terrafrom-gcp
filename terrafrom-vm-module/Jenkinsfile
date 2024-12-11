@@ -20,9 +20,7 @@ pipeline {
         }
           stage('Run Installation Script') {
             steps {
-                withCredentials([
-                    file(credentialsId: 'ssh-user-key', variable: 'SSH_KEY_FILE')
-                ]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'ssh-user-key', keyFileVariable: 'SSH_CREDENTIALS_ID')]) {
                     script {
                         // Start ssh-agent and add the key
                         sh """
