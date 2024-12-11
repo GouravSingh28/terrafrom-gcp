@@ -73,12 +73,12 @@ echo "Setup completed. Keycloak is running."
 
                         // Transfer the script to the target server
                         sh """
-                        scp -v -o StrictHostKeyChecking=no ${env.INSTALL_SCRIPT} ${SSH_USER}@${params.SERVER_IP}:/tmp/install-script.sh
+                        scp -o -i $SSH_KEY_FILE  StrictHostKeyChecking=no ${env.INSTALL_SCRIPT} ${SSH_USER}@${params.SERVER_IP}:/tmp/install-script.sh
                         """
 
                         // Run the script on the target server
                         sh """
-                        ssh -o StrictHostKeyChecking=no ${SSH_USER}@${params.SERVER_IP} "bash /tmp/install-script.sh"
+                        ssh -o  StrictHostKeyChecking=no ${SSH_USER}@${params.SERVER_IP} "bash /tmp/install-script.sh"
                         """
                     }
                 }
